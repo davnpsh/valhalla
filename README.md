@@ -1,2 +1,3 @@
-# valhalla-setup
-An Ansible playbook to setup my HomeLab
+# Valhalla
+
+> An Ansible playbook to setup my HomeLab

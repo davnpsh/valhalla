@@ -1,0 +1,31 @@
+- name: Install ufw package
+  ansible.builtin.apt:
+    name: ufw
+    state: latest
+    update_cache: yes
+
+- name: Allow OpenSSH
+  community.general.ufw:
+    rule: allow
+    name: OpenSSH
+
+- name: Allow all outgoing traffic by default
+  community.general.ufw:
+    direction: outgoing
+    default: allow
+
+- name: Reject all incoming traffic by default
+  community.general.ufw:
+    direction: incoming
+    default: reject
+
+- name: Enable ufw
+  community.general.ufw:
+    state: enabled
+
+- name: Disable IPv6 for ufw
+  ansible.builtin.lineinfile:
+    path: /etc/default/ufw
+    regexp: '^IPV6='
+    line: IPV6=no
+  notify: Reload ufw

@@ -1,0 +1,12 @@
+- name: Ensure Jellyfin folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user }}/docker-containers/jellyfin"
+    state: directory
+
+- name: Copy Jellyfin docker compose file
+  ansible.builtin.template:
+    src: jellyfin.j2
+    dest: "/home/{{ user }}/docker-containers/jellyfin/docker-compose.yml"
+
+- name: Start Jellyfin
+  ansible.builtin.shell: "cd /home/{{ user }}/docker-containers/jellyfin && docker compose down && docker compose up -d"

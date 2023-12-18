@@ -1,2 +1,8 @@
-- include_tasks: vaultwarden.yml
-- include_tasks: owncloud.yml
+#- include_tasks: vaultwarden.yml
+#- include_tasks: owncloud.yml
+#- include_tasks: jellyfin.yml
+#- include_tasks: qbittorrent.yml
+#- include_tasks: sonarr.yml
+#- include_tasks: prowlarr.yml
+#- include_tasks: radarr.yml
+- include_tasks: bazarr.yml

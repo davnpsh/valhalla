@@ -1,0 +1,17 @@
+- name: Ensure Radarr folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user }}/docker-containers/radarr"
+    state: directory
+
+- name: Copy Radarr docker compose file
+  ansible.builtin.template:
+    src: radarr.j2
+    dest: "/home/{{ user }}/docker-containers/radarr/docker-compose.yml"
+
+- name: Ensure media network exists
+  community.docker.docker_network:
+    name: media
+    state: present
+
+- name: Start Radarr
+  ansible.builtin.shell: "cd /home/{{ user }}/docker-containers/radarr && docker compose down && docker compose up -d"

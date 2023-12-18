@@ -1,0 +1,17 @@
+- name: Ensure qBitTorrent folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user }}/docker-containers/qbittorrent"
+    state: directory
+
+- name: Copy qBitTorrent docker compose file
+  ansible.builtin.template:
+    src: qbittorrent.j2
+    dest: "/home/{{ user }}/docker-containers/qbittorrent/docker-compose.yml"
+
+- name: Ensure media network exists
+  community.docker.docker_network:
+    name: media
+    state: present
+
+- name: Start qBitTorrent
+  ansible.builtin.shell: "cd /home/{{ user }}/docker-containers/qbittorrent && docker compose down && docker compose up -d"

@@ -1,0 +1,17 @@
+- name: Ensure Sonarr folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user }}/docker-containers/sonarr"
+    state: directory
+
+- name: Copy Sonarr docker compose file
+  ansible.builtin.template:
+    src: sonarr.j2
+    dest: "/home/{{ user }}/docker-containers/sonarr/docker-compose.yml"
+
+- name: Ensure media network exists
+  community.docker.docker_network:
+    name: media
+    state: present
+
+- name: Start Sonarr
+  ansible.builtin.shell: "cd /home/{{ user }}/docker-containers/sonarr && docker compose down && docker compose up -d"

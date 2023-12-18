@@ -1,0 +1,17 @@
+- name: Ensure Bazarr folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user }}/docker-containers/bazarr"
+    state: directory
+
+- name: Copy Bazarr docker compose file
+  ansible.builtin.template:
+    src: bazarr.j2
+    dest: "/home/{{ user }}/docker-containers/bazarr/docker-compose.yml"
+
+- name: Ensure media network exists
+  community.docker.docker_network:
+    name: media
+    state: present
+
+- name: Start Bazarr
+  ansible.builtin.shell: "cd /home/{{ user }}/docker-containers/bazarr && docker compose down && docker compose up -d"

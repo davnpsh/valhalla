@@ -9,3 +9,17 @@
     name: tailscale
     state: latest
     update_cache: yes
+
+# Problem: https://forum.tailscale.com/t/docker-containers-with-ports-bound-to-tailscale-interface-fail-to-start-on-reboot/4616/2
+# Fix for Debian 12:
+- name: "DOCKER-TAILSCALE FIX: Create folder for drop-in file"
+  ansible.builtin.file:
+    path: "/etc/systemd/system/docker.service.d/"
+    state: directory
+
+- name: "DOCKER-TAILSCALE FIX: Place drop-in file"
+  ansible.builtin.copy:
+    src: override.conf
+    dest: "/etc/systemd/system/docker.service.d/"
+  
+# Reboot the system

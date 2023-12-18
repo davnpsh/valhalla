@@ -1,0 +1,12 @@
+- name: Ensure Owncloud folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user }}/docker-containers/owncloud"
+    state: directory
+
+- name: Copy Owncloud docker compose file
+  ansible.builtin.template:
+    src: owncloud.j2
+    dest: "/home/{{ user }}/docker-containers/owncloud/docker-compose.yml"
+
+- name: Start Owncloud
+  ansible.builtin.shell: "cd /home/{{ user }}/docker-containers/owncloud && docker compose down && docker compose up -d"

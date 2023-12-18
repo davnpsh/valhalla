@@ -1,0 +1,13 @@
+- name: Ensure Vaultwarden folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user }}/docker-containers/vaultwarden"
+    state: directory
+
+- name: Copy Vaultwarden docker compose file
+  ansible.builtin.template:
+    src: vaultwarden.j2
+    dest: "/home/{{ user }}/docker-containers/vaultwarden/docker-compose.yml"
+
+- name: Start Vaultwarden
+  ansible.builtin.shell: "cd /home/{{ user }}/docker-containers/vaultwarden && docker compose down && docker compose up -d"
+

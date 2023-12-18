@@ -1,0 +1,65 @@
+version: "3"
+
+services:
+
+  owncloud:
+    image: owncloud/server:10.13
+    container_name: owncloud_server
+    restart: unless-stopped
+    ports:
+      - "{{ valhalla.ip.private }}:8090:8080"
+    depends_on:
+      - mariadb
+      - redis
+    environment:
+      - OWNCLOUD_DOMAIN={{ services.owncloud.domain }}
+      - OWNCLOUD_TRUSTED_DOMAINS={{ services.owncloud.domain }}
+      - OWNCLOUD_DB_TYPE=mysql
+      - OWNCLOUD_DB_NAME=owncloud
+      - OWNCLOUD_DB_USERNAME={{ services.owncloud.db.username }}
+      - OWNCLOUD_DB_PASSWORD={{ services.owncloud.db.password }}
+      - OWNCLOUD_DB_HOST=mariadb
+      - OWNCLOUD_ADMIN_USERNAME={{ services.owncloud.admin.username }}
+      - OWNCLOUD_ADMIN_PASSWORD={{ services.owncloud.admin.password }}
+      - OWNCLOUD_MYSQL_UTF8MB4=true
+      - OWNCLOUD_REDIS_ENABLED=true
+      - OWNCLOUD_REDIS_HOST=redis
+    healthcheck:
+      test: ["CMD", "/usr/bin/healthcheck"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - ./files:/mnt/data
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: owncloud_mariadb
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD={{ services.owncloud.db.root_password }}
+      - MYSQL_USER={{ services.owncloud.db.username }}
+      - MYSQL_PASSWORD={{ services.owncloud.db.password }}
+      - MYSQL_DATABASE=owncloud
+      - MARIADB_AUTO_UPGRADE=1
+    command: ["--max-allowed-packet=128M", "--innodb-log-file-size=64M"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-u", "root", "--password={{ services.owncloud.db.root_password }}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./mysql:/var/lib/mysql
+
+  redis:
+    image: redis:6
+    container_name: owncloud_redis
+    restart: unless-stopped
+    command: ["--databases", "1"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./redis:/data

@@ -6,4 +6,6 @@
 #- include_tasks: prowlarr.yml
 #- include_tasks: radarr.yml
 #- include_tasks: bazarr.yml
-- include_tasks: actual.yml
+#- include_tasks: actual.yml
+#- include_tasks: watchtower.yml
+- include_tasks: docker-socket-proxy.yml

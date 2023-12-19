@@ -3,6 +3,7 @@ version: '3'
 services:
 
   actual_server:
+    container_name: actual
     image: docker.io/actualbudget/actual-server:latest
     ports:
       - '{{ valhalla.ip.private }}:5006:5006'

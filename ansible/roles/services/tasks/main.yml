@@ -5,4 +5,5 @@
 #- include_tasks: sonarr.yml
 #- include_tasks: prowlarr.yml
 #- include_tasks: radarr.yml
-- include_tasks: bazarr.yml
+#- include_tasks: bazarr.yml
+- include_tasks: actual.yml

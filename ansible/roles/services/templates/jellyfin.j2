@@ -16,3 +16,9 @@ services:
     volumes:
       - ./config:/config
       - /media/data/media-library:/data
+      
+    # Hardware acceleration
+    group_add:
+      - "105" # render group
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128

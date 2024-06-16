@@ -1,5 +1,26 @@
 services:
 
+  # --- VPN
+  tailscale:
+    image: tailscale/tailscale:latest
+    container_name: tailscale
+    hostname: "{{ server.hostname }}"
+    restart: unless-stopped
+    volumes:
+      - ${PWD}/tailscale/state:/var/lib/tailscale
+      - /dev/net/tun:/dev/net/tun
+    network_mode: host
+    cap_add:
+      - net_admin
+      - net_raw
+    environment:
+      - TS_AUTHKEY=${TAILSCALE_AUTHKEY}
+      - TS_USERSPACE=false
+      - TS_STATE_DIR=/var/lib/tailscale
+    healthcheck:
+      # Check if Tailscale network interface is loaded
+      test: ["CMD-SHELL", " ip a | grep -q tailscale"]
+
   # --- WATCHDOG
   docker-socket-proxy:
     container_name: "docker-socket-proxy"
@@ -20,6 +41,9 @@ services:
       - "{{ server.ip.private }}:2375:2375"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro # Mounted as read-only
+    depends_on:
+      tailscale:
+        condition: service_healthy
 
   watchtower:
     container_name: watchtower
@@ -41,13 +65,16 @@ services:
       - UMASK=002
       - TZ={{ server.timezone }}
     volumes:
-      - ./jellyfin/config:/config
+      - ${PWD}/jellyfin/config:/config
       - "{{ server.volumes.media_library.path }}:/data" # Shared media library
     # Hardware acceleration
     group_add:
       - "105" # render group
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128 # Intel graphics
+    depends_on:
+      tailscale:
+        condition: service_healthy
 
   qbittorrent:
     container_name: qbittorrent
@@ -61,10 +88,13 @@ services:
       - UMASK=002
       - TZ={{ server.timezone }}
     volumes:
-      - ./qbittorrent/config:/config
+      - ${PWD}/qbittorrent/config:/config
       - "{{ server.volumes.media_library.path }}:/data" # Shared media library
     networks:
       - media
+    depends_on:
+      tailscale:
+        condition: service_healthy
 
   sonarr:
     container_name: sonarr
@@ -78,10 +108,13 @@ services:
       - UMASK=002
       - TZ={{ server.timezone }}
     volumes:
-      - ./sonarr/config:/config
+      - ${PWD}/sonarr/config:/config
       - "{{ server.volumes.media_library.path }}:/data" # Shared media library
     networks:
       - media
+    depends_on:
+      tailscale:
+        condition: service_healthy
 
   radarr:
     container_name: radarr
@@ -95,10 +128,13 @@ services:
       - UMASK=002
       - TZ={{ server.timezone }}
     volumes:
-      - ./radarr/config:/config
+      - ${PWD}/radarr/config:/config
       - "{{ server.volumes.media_library.path }}:/data" # Shared media library
     networks:
       - media
+    depends_on:
+      tailscale:
+        condition: service_healthy
 
   bazarr:
     container_name: bazarr
@@ -112,10 +148,13 @@ services:
       - UMASK=002
       - TZ={{ server.timezone }}
     volumes:
-      - ./bazarr/config:/config
+      - ${PWD}/bazarr/config:/config
       - "{{ server.volumes.media_library.path }}:/data" # Shared media library
     networks:
       - media
+    depends_on:
+      tailscale:
+        condition: service_healthy
 
   prowlarr:
     container_name: prowlarr
@@ -129,9 +168,12 @@ services:
       - UMASK=002
       - TZ={{ server.timezone }}
     volumes:
-      - ./prowlarr/config:/config
+      - ${PWD}/prowlarr/config:/config
     networks:
       - media
+    depends_on:
+      tailscale:
+        condition: service_healthy
 
 
 networks:

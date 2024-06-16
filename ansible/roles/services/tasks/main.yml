@@ -1,7 +1,7 @@
 - name: Copy general docker compose file
   ansible.builtin.template:
-    src: docker-compose.j2
-    dest: "/home/{{ user.name }}/docker/docker-compose.yml"
+    src: compose.j2
+    dest: "/home/{{ user.name }}/docker/compose.yml"
 
 - name: Copy ENV file for docker compose
   ansible.builtin.copy:

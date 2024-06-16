@@ -29,13 +29,13 @@
 
 - name: Add user to Docker group
   ansible.builtin.user:
-    name: "{{ user }}"
+    name: "{{ user.name }}"
     groups: docker
     append: yes
 
-- name: Ensure folder for Docker containers exists
+- name: Ensure folder for Docker volumes data exists
   ansible.builtin.file:
-    path: "/home/{{ user }}/docker-containers"
+    path: "/home/{{ user.name }}/docker"
     state: directory
-    owner: "{{ user }}"
-    group: "{{ user }}"
+    owner: "{{ user.name }}"
+    group: "{{ user.name }}"

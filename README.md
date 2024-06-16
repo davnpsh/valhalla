@@ -8,7 +8,7 @@ This repository serves as setup and documentation of my HomeLab infrastructure.
 
 The Ansible playbook was run with Python 3.12.3 and the [ansible-10.0.1](https://pypi.org/project/ansible/) community package. Install Python in your local machine, clone this repository and change directory to `./ansible`.
 
-Inspect the folders and look for `[...].example[...]` files because they have environment variables that need values for the playbook to run.
+Inspect the directories and look for `[...].example[...]` files because they have environment variables that need values for the playbook to run.
 
 Create a Python virtual env. and install `ansible`:
 

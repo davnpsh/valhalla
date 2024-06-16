@@ -42,5 +42,5 @@
 
 # ---
 
-# - name: Start Docker services
-#   ansible.builtin.shell: "cd /home/{{ user.name }}/docker && docker compose up -d"
+- name: Start Docker services
+  ansible.builtin.shell: "cd /home/{{ user.name }}/docker && docker compose up -d"

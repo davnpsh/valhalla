@@ -37,7 +37,7 @@ services:
       - "{{ server.ip.private }}:8096:8096"
     environment:
       - PUID={{ user.PUID }}
-      - PGID={{ user.GUID }}
+      - PGID={{ user.PGID }}
       - UMASK=002
       - TZ={{ server.timezone }}
     volumes:
@@ -57,7 +57,7 @@ services:
       - "{{ server.ip.private }}:9000:8080"
     environment:
       - PUID={{ user.PUID }}
-      - PGID={{ user.GUID }}
+      - PGID={{ user.PGID }}
       - UMASK=002
       - TZ={{ server.timezone }}
     volumes:
@@ -74,7 +74,7 @@ services:
       - "{{ server.ip.private }}:8989:8989"
     environment:
       - PUID={{ user.PUID }}
-      - PGID={{ user.GUID }}
+      - PGID={{ user.PGID }}
       - UMASK=002
       - TZ={{ server.timezone }}
     volumes:
@@ -91,7 +91,7 @@ services:
       - "{{ server.ip.private }}:7878:7878"
     environment:
       - PUID={{ user.PUID }}
-      - PGID={{ user.GUID }}
+      - PGID={{ user.PGID }}
       - UMASK=002
       - TZ={{ server.timezone }}
     volumes:
@@ -108,7 +108,7 @@ services:
       - "{{ server.ip.private }}:6767:6767"
     environment:
       - PUID={{ user.PUID }}
-      - PGID={{ user.GUID }}
+      - PGID={{ user.PGID }}
       - UMASK=002
       - TZ={{ server.timezone }}
     volumes:
@@ -125,7 +125,7 @@ services:
       - "{{ server.ip.private }}:9696:9696"
     environment:
       - PUID={{ user.PUID }}
-      - PGID={{ user.GUID }}
+      - PGID={{ user.PGID }}
       - UMASK=002
       - TZ={{ server.timezone }}
     volumes:

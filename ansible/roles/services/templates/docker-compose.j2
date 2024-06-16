@@ -1,6 +1,6 @@
 services:
 
-  # --- WATCHDOG SERVICES
+  # --- WATCHDOG
   docker-socket-proxy:
     container_name: "docker-socket-proxy"
     image: ghcr.io/tecnativa/docker-socket-proxy:latest
@@ -28,7 +28,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-  # --- MEDIA SERVICES
+  # --- MEDIA
   jellyfin:
     container_name: jellyfin
     image: ghcr.io/hotio/jellyfin:latest

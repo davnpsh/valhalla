@@ -1,0 +1,138 @@
+services:
+
+  # --- WATCHDOG SERVICES
+  docker-socket-proxy:
+    container_name: "docker-socket-proxy"
+    image: ghcr.io/tecnativa/docker-socket-proxy:latest
+    restart: unless-stopped
+    environment:
+      # For Portainer
+      - CONTAINERS=1
+      - SERVICES=1
+      - TASKS=1
+      - IMAGES=1
+      - INFO=1
+      - VOLUMES=1
+      - NETWORKS=1
+      # Danger zone
+      - POST=0 # Disallow any POST operations (effectively read-only)
+    ports:
+      - "{{ server.ip.private }}:2375:2375"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Mounted as read-only
+
+  watchtower:
+    container_name: watchtower
+    image: containrrr/watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  # --- MEDIA SERVICES
+  jellyfin:
+    container_name: jellyfin
+    image: ghcr.io/hotio/jellyfin:latest
+    restart: unless-stopped
+    ports:
+      - "{{ server.ip.private }}:8096:8096"
+    environment:
+      - PUID={{ user.PUID }}
+      - PGID={{ user.GUID }}
+      - UMASK=002
+      - TZ={{ server.timezone }}
+    volumes:
+      - ./jellyfin/config:/config
+      - "{{ server.volumes.media_library.path }}:/data" # Shared media library
+    # Hardware acceleration
+    group_add:
+      - "105" # render group
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128 # Intel graphics
+
+  qbittorrent:
+    container_name: qbittorrent
+    image: ghcr.io/hotio/qbittorrent:latest
+    restart: unless-stopped
+    ports:
+      - "{{ server.ip.private }}:9000:8080"
+    environment:
+      - PUID={{ user.PUID }}
+      - PGID={{ user.GUID }}
+      - UMASK=002
+      - TZ={{ server.timezone }}
+    volumes:
+      - ./qbittorrent/config:/config
+      - "{{ server.volumes.media_library.path }}:/data" # Shared media library
+    networks:
+      - media
+
+  sonarr:
+    container_name: sonarr
+    image: ghcr.io/hotio/sonarr:latest
+    restart: unless-stopped
+    ports:
+      - "{{ server.ip.private }}:8989:8989"
+    environment:
+      - PUID={{ user.PUID }}
+      - PGID={{ user.GUID }}
+      - UMASK=002
+      - TZ={{ server.timezone }}
+    volumes:
+      - ./sonarr/config:/config
+      - "{{ server.volumes.media_library.path }}:/data" # Shared media library
+    networks:
+      - media
+
+  radarr:
+    container_name: radarr
+    image: ghcr.io/hotio/radarr:latest
+    restart: unless-stopped
+    ports:
+      - "{{ server.ip.private }}:7878:7878"
+    environment:
+      - PUID={{ user.PUID }}
+      - PGID={{ user.GUID }}
+      - UMASK=002
+      - TZ={{ server.timezone }}
+    volumes:
+      - ./radarr/config:/config
+      - "{{ server.volumes.media_library.path }}:/data" # Shared media library
+    networks:
+      - media
+
+  bazarr:
+    container_name: bazarr
+    image: ghcr.io/hotio/bazarr:latest
+    restart: unless-stopped
+    ports:
+      - "{{ server.ip.private }}:6767:6767"
+    environment:
+      - PUID={{ user.PUID }}
+      - PGID={{ user.GUID }}
+      - UMASK=002
+      - TZ={{ server.timezone }}
+    volumes:
+      - ./bazarr/config:/config
+      - "{{ server.volumes.media_library.path }}:/data" # Shared media library
+    networks:
+      - media
+
+  prowlarr:
+    container_name: prowlarr
+    image: ghcr.io/hotio/prowlarr:latest
+    restart: unless-stopped
+    ports:
+      - "{{ server.ip.private }}:9696:9696"
+    environment:
+      - PUID={{ user.PUID }}
+      - PGID={{ user.GUID }}
+      - UMASK=002
+      - TZ={{ server.timezone }}
+    volumes:
+      - ./prowlarr/config:/config
+    networks:
+      - media
+
+
+networks:
+  media:

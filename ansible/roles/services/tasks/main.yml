@@ -1,11 +1,46 @@
-#- include_tasks: vaultwarden.yml
-#- include_tasks: owncloud.yml
-- include_tasks: jellyfin.yml
-#- include_tasks: qbittorrent.yml
-#- include_tasks: sonarr.yml
-#- include_tasks: prowlarr.yml
-#- include_tasks: radarr.yml
-#- include_tasks: bazarr.yml
-#- include_tasks: actual.yml
-#- include_tasks: watchtower.yml
-#- include_tasks: docker-socket-proxy.yml
+- name: Copy general docker compose file
+  ansible.builtin.template:
+    src: docker-compose.j2
+    dest: "/home/{{ user.name }}/docker/docker-compose.yml"
+
+- name: Copy ENV file for docker compose
+  ansible.builtin.copy:
+    src: .env
+    dest: "/home/{{ user.name }}/docker/"
+
+# --- SERVICES
+
+- name: Ensure Jellyfin data folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/docker/jellyfin"
+    state: directory
+
+- name: Ensure qBitTorrent data folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/docker/qbittorrent"
+    state: directory
+
+- name: Ensure Sonarr data folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/docker/sonarr"
+    state: directory
+
+- name: Ensure Radarr data folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/docker/radarr"
+    state: directory
+
+- name: Ensure Bazarr data folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/docker/bazarr"
+    state: directory
+
+- name: Ensure Prowlarr data folder exists
+  ansible.builtin.file:
+    path: "/home/{{ user.name }}/docker/prowlarr"
+    state: directory
+
+# ---
+
+# - name: Start Docker services
+#   ansible.builtin.shell: "cd /home/{{ user.name }}/docker && docker compose up -d"

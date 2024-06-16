@@ -4,7 +4,6 @@
     - secrets.yml
 
   roles:
-
     #- role: security
     #  become: yes
 
@@ -15,11 +14,11 @@
     # --- Tailscale
     #- role: vpn
     #  become: yes
-    
+
     # Run the playbook once, and finish setting up Tailscale
 
     # After this step, uncomment the services role below
     # and add the Tailscale IP address to the secrets.yml file
     # ---
-    
+
     - role: services

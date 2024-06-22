@@ -51,6 +51,23 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  
+  glances:
+    image: nicolargo/glances:latest
+    restart: unless-stopped
+    container_name: glances
+    pid: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/os-release:/etc/os-release:ro
+      - "{{ server.volumes.data.path }}:/media/data:ro" # Read only data disk
+    ports:
+      - "{{ server.ip.private }}:61208:61208"
+    environment:
+      - "GLANCES_OPT=-w"
+    depends_on:
+      tailscale:
+        condition: service_healthy
 
   # --- MEDIA
   jellyfin:

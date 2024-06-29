@@ -18,8 +18,8 @@ services:
       - TS_USERSPACE=false
       - TS_STATE_DIR=/var/lib/tailscale
     healthcheck:
-      # Check if Tailscale network interface is loaded
-      test: ["CMD-SHELL", " ip a | grep -q tailscale"]
+      # Check if Tailscale IP is assigned
+      test: ["CMD-SHELL", " tailscale status | grep -q {{ server.ip.private }}"]
 
   # --- WATCHDOG
   docker-socket-proxy:

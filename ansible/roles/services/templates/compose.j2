@@ -1,27 +1,47 @@
 services:
 
-  # --- VPN
+  # --- ROUTER TO TAILSCALE
   tailscale:
     image: tailscale/tailscale:latest
-    container_name: tailscale
+    container_name: tailscale-router
     hostname: "{{ server.hostname }}"
     restart: unless-stopped
     volumes:
       - ${PWD}/tailscale/state:/var/lib/tailscale
       - /dev/net/tun:/dev/net/tun
-    network_mode: host
     cap_add:
       - net_admin
-      - net_raw
+      - sys_module
     environment:
       - TS_AUTHKEY=${TAILSCALE_AUTHKEY}
       - TS_USERSPACE=false
       - TS_STATE_DIR=/var/lib/tailscale
+    networks:
+      - proxy
     healthcheck:
-      # Check if Tailscale IP is assigned
-      test: ["CMD-SHELL", " tailscale status | grep -q {{ server.ip.private }}"]
+      # Check if Tailscale network interface is loaded
+      test: ["CMD-SHELL", " ip a | grep -q tailscale"]
+
+  # --- PROXY
+  # Dashboard port: 81
+  nginx-proxy-manager:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: 'nginx-proxy-manager'
+    restart: unless-stopped
+    network_mode: service:tailscale
+    volumes:
+      - ${PWD}/nginx/data:/data
+      - ${PWD}/nginx/letsencrypt:/etc/letsencrypt
+    healthcheck:
+      test: ["CMD", "/usr/bin/check-health"]
+      interval: 10s
+      timeout: 3s
+    depends_on:
+      tailscale:
+        condition: service_healthy
 
   # --- WATCHDOG
+  # Exposes ports: 2375
   docker-socket-proxy:
     container_name: "docker-socket-proxy"
     image: ghcr.io/tecnativa/docker-socket-proxy:latest
@@ -37,12 +57,12 @@ services:
       - NETWORKS=1
       # Danger zone
       - POST=0 # Disallow any POST operations (effectively read-only)
-    ports:
-      - "{{ server.ip.private }}:2375:2375"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro # Mounted as read-only
+    networks:
+      - proxy
     depends_on:
-      tailscale:
+      nginx-proxy-manager:
         condition: service_healthy
 
   watchtower:
@@ -52,6 +72,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
   
+  # Exposes ports: 61208
   glances:
     image: nicolargo/glances:latest
     restart: unless-stopped
@@ -61,21 +82,20 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - /etc/os-release:/etc/os-release:ro
       - "{{ server.volumes.data.path }}:/media/data:ro" # Read only data disk
-    ports:
-      - "{{ server.ip.private }}:61208:61208"
     environment:
       - "GLANCES_OPT=-w"
+    networks:
+      - proxy
     depends_on:
-      tailscale:
+      nginx-proxy-manager:
         condition: service_healthy
 
   # --- MEDIA
+  # Exposes ports: 8096
   jellyfin:
     container_name: jellyfin
     image: ghcr.io/hotio/jellyfin:latest
     restart: unless-stopped
-    ports:
-      - "{{ server.ip.private }}:8096:8096"
     environment:
       - PUID={{ user.PUID }}
       - PGID={{ user.PGID }}
@@ -89,16 +109,17 @@ services:
       - "105" # render group
     devices:
       - /dev/dri/renderD128:/dev/dri/renderD128 # Intel graphics
+    networks:
+      - proxy
     depends_on:
-      tailscale:
+      nginx-proxy-manager:
         condition: service_healthy
 
+  # Exposes ports: 8080
   qbittorrent:
     container_name: qbittorrent
     image: ghcr.io/hotio/qbittorrent:latest
     restart: unless-stopped
-    ports:
-      - "{{ server.ip.private }}:9000:8080"
     environment:
       - PUID={{ user.PUID }}
       - PGID={{ user.PGID }}
@@ -109,16 +130,16 @@ services:
       - "{{ server.volumes.media_library.path }}:/data" # Shared media library
     networks:
       - media
+      - proxy
     depends_on:
-      tailscale:
+      nginx-proxy-manager:
         condition: service_healthy
 
+  # Exposes ports: 8989
   sonarr:
     container_name: sonarr
     image: ghcr.io/hotio/sonarr:latest
     restart: unless-stopped
-    ports:
-      - "{{ server.ip.private }}:8989:8989"
     environment:
       - PUID={{ user.PUID }}
       - PGID={{ user.PGID }}
@@ -129,16 +150,16 @@ services:
       - "{{ server.volumes.media_library.path }}:/data" # Shared media library
     networks:
       - media
+      - proxy
     depends_on:
-      tailscale:
+      nginx-proxy-manager:
         condition: service_healthy
 
+  # Exposes ports: 7878
   radarr:
     container_name: radarr
     image: ghcr.io/hotio/radarr:latest
     restart: unless-stopped
-    ports:
-      - "{{ server.ip.private }}:7878:7878"
     environment:
       - PUID={{ user.PUID }}
       - PGID={{ user.PGID }}
@@ -149,16 +170,16 @@ services:
       - "{{ server.volumes.media_library.path }}:/data" # Shared media library
     networks:
       - media
+      - proxy
     depends_on:
-      tailscale:
+      nginx-proxy-manager:
         condition: service_healthy
 
+  # Exposes ports: 6767
   bazarr:
     container_name: bazarr
     image: ghcr.io/hotio/bazarr:latest
     restart: unless-stopped
-    ports:
-      - "{{ server.ip.private }}:6767:6767"
     environment:
       - PUID={{ user.PUID }}
       - PGID={{ user.PGID }}
@@ -169,16 +190,16 @@ services:
       - "{{ server.volumes.media_library.path }}:/data" # Shared media library
     networks:
       - media
+      - proxy
     depends_on:
-      tailscale:
+      nginx-proxy-manager:
         condition: service_healthy
 
+  # Exposes ports: 9696
   prowlarr:
     container_name: prowlarr
     image: ghcr.io/hotio/prowlarr:latest
     restart: unless-stopped
-    ports:
-      - "{{ server.ip.private }}:9696:9696"
     environment:
       - PUID={{ user.PUID }}
       - PGID={{ user.PGID }}
@@ -188,10 +209,12 @@ services:
       - ${PWD}/prowlarr/config:/config
     networks:
       - media
+      - proxy
     depends_on:
-      tailscale:
+      nginx-proxy-manager:
         condition: service_healthy
 
 
 networks:
+  proxy:
   media:
